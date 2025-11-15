@@ -48,3 +48,7 @@ dist/
 generated/
 outputs/
 exports/
+
+
+everythingsignal.db
+*.db

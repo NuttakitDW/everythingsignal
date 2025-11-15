@@ -1,0 +1,14 @@
+# api/config.py
+
+DATASET_ID = "btc-usdt-1d-v0.1"
+DATASET_SYMBOL = "BTC-USDT"
+DATASET_TIMEFRAME = "1D"
+DATASET_RANGE = "2018-01-01 to 2024-01-01"
+
+# TODO: compute this from canonical CSV per docs/dataset_spec.md
+DATASET_HASH = "SET_ME_TO_REAL_SHA256"
+
+ARTIFACT_VERSION = "0.2"
+ESL_VERSION = "0.1"
+ENGINE_VERSION = "0.1"
+DATASET_VERSION = "0.1"
