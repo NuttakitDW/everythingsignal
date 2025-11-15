@@ -21,7 +21,7 @@ def _resolve_leaf(node: Any, data: pd.DataFrame) -> Any:
     - Series -> Series
     """
     if isinstance(node, str):
-        if node in data.columns:
+        if node in data:
             return data[node]
         raise ESLExecutionError(f"Unknown field reference: {node}")
     if isinstance(node, (int, float)):
