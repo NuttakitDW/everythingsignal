@@ -1,70 +1,46 @@
-# engine/example_usage.py
-
-from __future__ import annotations
-
-import numpy as np
+import json
 import pandas as pd
 
-from .executor import evaluate_expression_tree
+from .backtester import run_backtest
+from .serialization import build_model_artifact
 
+# 1) Fake data
+dates = pd.date_range("2020-01-01", periods=100)
+df = pd.DataFrame(
+    {
+        "open": range(100),
+        "high": [x + 1 for x in range(100)],
+        "low": [x - 1 for x in range(100)],
+        "close": [x + 0.5 for x in range(100)],
+        "volume": [1000 + 10 * x for x in range(100)],
+    },
+    index=dates,
+)
 
-def make_dummy_data(n: int = 100) -> pd.DataFrame:
-    idx = pd.date_range("2024-01-01", periods=n, freq="D")
-    prices = np.cumsum(np.random.randn(n)) + 100.0
+# 2) ESL model (JSON operator tree)
+model_json = {
+    "op": "SUB",
+    "args": [
+        {"op": "SMA", "args": ["close", 10]},
+        {"op": "SMA", "args": ["close", 30]},
+    ],
+}
 
-    df = pd.DataFrame(
-        {
-            "open": prices + np.random.randn(n) * 0.3,
-            "high": prices + np.abs(np.random.randn(n)),
-            "low": prices - np.abs(np.random.randn(n)),
-            "close": prices + np.random.randn(n) * 0.2,
-            "volume": np.random.randint(1_000, 10_000, size=n),
-        },
-        index=idx,
-    )
-    return df
+# 3) Backtest
+result = run_backtest(model_json, df)
 
+# 4) Build artifact with some metadata
+metadata = {
+    "name": "SMA Spread 10–30",
+    "description": "Simple momentum model using SMA spread.",
+    "tags": ["momentum", "sma"],
+    "universe": "single_asset",
+    "symbol": "DEMO",
+    "author_id": "example-user",
+}
 
-def main() -> None:
-    data = make_dummy_data()
+artifact = build_model_artifact(model_json, result, metadata=metadata)
 
-    # ESL JSON model:
-    # SMA(close, 20) - SMA(close, 50)
-    tree = {
-        "op": "SUB",
-        "args": [
-            {"op": "SMA", "args": ["close", 20]},
-            {"op": "SMA", "args": ["close", 50]},
-        ],
-    }
-
-    signal = evaluate_expression_tree(tree, data)
-
-    print("Signal (head):")
-    print(signal.head(15))
-
-    # Another example:
-    # NORMALIZE( DIFF(close, 5) ) * NORMALIZE(volume)
-    composite_tree = {
-        "op": "MUL",
-        "args": [
-            {
-                "op": "NORMALIZE",
-                "args": [
-                    {"op": "DIFF", "args": ["close", 5]},
-                ],
-            },
-            {
-                "op": "NORMALIZE",
-                "args": ["volume"],
-            },
-        ],
-    }
-
-    signal2 = evaluate_expression_tree(composite_tree, data)
-    print("\nComposite signal (head):")
-    print(signal2.head(15))
-
-
-if __name__ == "__main__":
-    main()
+# 5) Convert to JSON text (ready to store or upload to Walrus)
+artifact_json_str = json.dumps(artifact, indent=2)
+print(artifact_json_str[:500], "...")
