@@ -119,9 +119,11 @@ def simulate(
     # In the future: you’ll load the canonical dataset here according to docs/dataset_spec.md
     # For now you likely already have this in engine/example_usage.
     # Here we'll assume you have a helper to load your BTC-USDT 1D DataFrame.
-    from engine.example_usage import df as demo_df  # TEMP: replace with real loader
+    from engine.dataset import load_dataset
 
-    backtest_result = run_backtest(model_json, demo_df)
+    df = load_dataset()
+    backtest_result = run_backtest(model_json, df)
+
 
     # Build v0.1 artifact using your existing helper
     artifact_v01 = build_model_artifact(
@@ -151,9 +153,12 @@ def publish(
     """
     model_json = req.model
 
-    from engine.example_usage import df as demo_df  # TEMP
+    from engine.dataset import load_dataset
 
-    backtest_result = run_backtest(model_json, demo_df)
+    df = load_dataset()
+    backtest_result = run_backtest(model_json, df)
+
+
 
     artifact_v01 = build_model_artifact(
         model_json,
